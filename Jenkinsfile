@@ -9,34 +9,68 @@ pipeline {
         }
         stage ("Git Checkout") {
             steps {
-                git branch: 'main', url: 'https://github.com/vijaygiduthuri/Netflix-Clone.git'
+                git branch: 'main', url: 'https://github.com/Sunilmargale/Netflix-project.git'
             }
         }
         stage('OWASP FS SCAN') {
             steps {
-                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DC'
                 dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
         stage ("Build Docker Image") {
             steps {
-                sh "docker build -t netflix ."
+                sh "docker build -t task-master ."
             }
         }
         stage ("Tag & Push to DockerHub") {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker') {
-                        sh "docker tag netflix vijaygiduthuri/netflix:latest"
-                        sh "docker push vijaygiduthuri/netflix:latest"
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                        sh "docker tag task-master sunilmargale/task-master:latest"
+                        sh "docker push sunilmargale/task-master:latest"
+                    }
+                }
+            }
+        }
+        stage ("Docker Scout Image Analysis ") {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                        sh 'docker-scout quickview sunilmargale/task-master:latest'
+                        sh 'docker-scout cves sunilmargale/task-master:latest'
+                        sh 'docker-scout recommendations sunilmargale/task-master:latest'
                     }
                 }
             }
         }
         stage ("Deploy to Docker Conatiner") {
             steps {
-                sh "docker run -itd --name netflix -p 4000:80 netflix:latest"
+                sh "docker run -itd --name task-master-pro -p 5000:5000 task-master:latest"
             }
         }
     }
-}
+    post {
+    always {
+        emailext attachLog: true,
+            subject: "'${currentBuild.result}'",
+            body: """
+                <html>
+                <body>
+                    <div style="background-color: #FFA07A; padding: 10px; margin-bottom: 10px;">
+                        <p style="color: white; font-weight: bold;">Project: ${env.JOB_NAME}</p>
+                    </div>
+                    <div style="background-color: #90EE90; padding: 10px; margin-bottom: 10px;">
+                        <p style="color: white; font-weight: bold;">Build Number: ${env.BUILD_NUMBER}</p>
+                    </div>
+                    <div style="background-color: #87CEEB; padding: 10px; margin-bottom: 10px;">
+                        <p style="color: white; font-weight: bold;">URL: ${env.BUILD_URL}</p>
+                    </div>
+                </body>
+                </html>
+            """,
+            to: 'sunilmargale27@gmail.com',
+            mimeType: 'text/html'
+        }
+    }
+}    
