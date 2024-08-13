@@ -9,7 +9,7 @@ pipeline {
         }
         stage ("Git Checkout") {
             steps {
-                git branch: 'main', url: 'https://github.com/Sunilmargale/Netflix-project.git'
+                git branch: 'main', url: 'https://github.com/Sunilmargale/Task-pro-project.git'
             }
         }
         stage('OWASP FS SCAN') {
