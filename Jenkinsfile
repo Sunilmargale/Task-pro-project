@@ -27,7 +27,7 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker-cred') {
-                        sh "docker tag task-master sunilmargale/task-master:latest"
+                        sh "docker tag task-master sunilmargale/taskmaster:latest"
                         sh "docker push sunilmargale/task-master:latest"
                     }
                 }
@@ -37,16 +37,16 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker-cred') {
-                        sh 'docker-scout quickview sunilmargale/task-master:latest'
-                        sh 'docker-scout cves sunilmargale/task-master:latest'
-                        sh 'docker-scout recommendations sunilmargale/task-master:latest'
+                        sh 'docker-scout quickview sunilmargale/taskmaster:latest'
+                        sh 'docker-scout cves sunilmargale/taskmaster:latest'
+                        sh 'docker-scout recommendations sunilmargale/taskmaster:latest'
                     }
                 }
             }
         }
         stage ("Deploy to Docker Conatiner") {
             steps {
-                sh "docker run -itd --name task-master-pro -p 5000:5000 task-master:latest"
+                sh "docker run -itd --name taskmasterpro -p 5000:5000 taskmaster:latest"
             }
         }
     }
