@@ -20,7 +20,7 @@ pipeline {
         }
         stage ("Build Docker Image") {
             steps {
-                sh "docker build -t task-master ."
+                sh "docker build -t taskmaster ."
             }
         }
         stage ("Tag & Push to DockerHub") {
